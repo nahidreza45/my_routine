@@ -4,7 +4,7 @@
 
 An offline-first Android timetable, academic week tracker, and Class Test (CT) marks manager built with **Kotlin** and **Jetpack Compose**, tailored around a Saturday-Wednesday university schedule.
 
-> **Latest Release:** [`v2.2`](https://github.com/nahidreza45/my_routine/releases) (`versionCode = 3`) | **Min SDK:** Android 7.0 (`API 24`) | **Target SDK:** `API 36`
+> **Latest Release:** [`v2.5`](https://github.com/nahidreza45/my_routine/releases) (`versionCode = 6`) | **Min SDK:** Android 7.0 (`API 24`) | **Target SDK:** `API 36`
 
 ---
 
@@ -24,7 +24,7 @@ An offline-first Android timetable, academic week tracker, and Class Test (CT) m
   - Configurable reminder lead time via `AlarmManager` with quick **Cancel Today** notification actions and automatic reschedule across device reboots and timezone changes.
 - **Zero-Account Persistence & Export**
   - Stored locally with Jetpack Preferences DataStore + `kotlinx.serialization` JSON (`coerceInputValues` & `ignoreUnknownKeys` for resilient upgrades).
-  - Full JSON backup/restore via Storage Access Framework and high-res PNG timetable export/share.
+  - Supports both **Schedule-Only** sharing (keeps receivers' CT marks intact) and **Full Personal Backup** with auto-detecting dynamic JSON import, plus high-DPI Day/Week PNG export and share.
 
 ---
 

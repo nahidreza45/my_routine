@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nahidreza.routine.data.DecodedBackup
 import com.nahidreza.routine.data.ResolvedEntry
 import com.nahidreza.routine.data.RoutineRepository
 import com.nahidreza.routine.data.RoutineScheduleEngine
@@ -441,7 +442,13 @@ class RoutineViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun exportBackupJson(): String = repository.exportToJson(dbState.value)
+    fun exportBackupJson(scheduleOnly: Boolean = false): String {
+        return if (scheduleOnly) {
+            repository.exportScheduleOnlyJson(dbState.value)
+        } else {
+            repository.exportToJson(dbState.value)
+        }
+    }
 
     fun importBackupUri(uri: Uri) {
         viewModelScope.launch {
@@ -452,27 +459,38 @@ class RoutineViewModel(application: Application) : AndroidViewModel(application)
             }.getOrNull()
 
             if (raw.isNullOrBlank()) {
-                _toastMessage.tryEmit("Could not read backup file")
+                _toastMessage.tryEmit("Could not read JSON file")
                 return@launch
             }
-            val parsed = repository.decodeFromJson(raw)
-            parsed.onSuccess { restored ->
-                repository.saveState(restored)
-                _toastMessage.tryEmit("Backup restored successfully")
+            val parsed = repository.decodeBackup(raw)
+            parsed.onSuccess { decoded ->
+                when (decoded) {
+                    is DecodedBackup.FullBackup -> {
+                        repository.saveState(decoded.state)
+                        _toastMessage.tryEmit("Full backup restored")
+                    }
+                    is DecodedBackup.ScheduleOnly -> {
+                        repository.updateState { current ->
+                            RoutineRepository.mergeSharedSchedule(current, decoded.schedule)
+                        }
+                        _toastMessage.tryEmit("Schedule imported (CT marks kept)")
+                    }
+                }
             }.onFailure {
-                _toastMessage.tryEmit("Invalid JSON backup file")
+                _toastMessage.tryEmit("Invalid routine JSON file")
             }
         }
     }
 
-    fun exportBackupUri(uri: Uri) {
+    fun exportBackupUri(uri: Uri, scheduleOnly: Boolean = false) {
         viewModelScope.launch {
             val result = runCatching {
                 getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
-                    out.write(exportBackupJson().toByteArray(Charsets.UTF_8))
+                    out.write(exportBackupJson(scheduleOnly).toByteArray(Charsets.UTF_8))
                 }
             }
-            _toastMessage.tryEmit(if (result.isSuccess) "Backup JSON saved" else "Failed to save backup")
+            val successLabel = if (scheduleOnly) "Schedule JSON saved" else "Full backup JSON saved"
+            _toastMessage.tryEmit(if (result.isSuccess) successLabel else "Failed to save JSON")
         }
     }
 
@@ -513,13 +531,25 @@ class RoutineViewModel(application: Application) : AndroidViewModel(application)
         return if (state.settings.viewMode == "WEEK") {
             val weekStart = date.startOfUniversityWeek()
             val weekDates = (0..4).map { weekStart.plusDays(it) }
+            val academicWeek = RoutineScheduleEngine.academicWeekFor(weekStart, state)
+            val weekHoliday = RoutineScheduleEngine.holidayForWeek(weekDates, state.holidays)
             val byDay = weekDates.map { d ->
                 RoutineScheduleEngine.entriesForDate(d, state)
             }
-            RoutineImageExporter.renderWeekBitmap(weekDates, byDay)
+            RoutineImageExporter.renderWeekBitmap(
+                weekDates = weekDates,
+                academicWeek = academicWeek,
+                byDay = byDay,
+                weekHoliday = weekHoliday
+            )
         } else {
+            val holiday = RoutineScheduleEngine.isHoliday(date, state.holidays)
             val items: List<ResolvedEntry> = RoutineScheduleEngine.entriesForDate(date, state)
-            RoutineImageExporter.renderDayBitmap(date, items)
+            RoutineImageExporter.renderDayBitmap(
+                date = date,
+                items = items,
+                holiday = holiday
+            )
         }
     }
 }

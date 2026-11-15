@@ -12,8 +12,8 @@ android {
         applicationId = "com.nahidreza.routine"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "2.2"
+        versionCode = 6
+        versionName = "2.5"
     }
 
     buildTypes {

@@ -79,6 +79,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -97,6 +98,7 @@ import com.nahidreza.routine.model.ColorPalette
 import com.nahidreza.routine.model.RoutineDate
 import com.nahidreza.routine.model.SubjectColorGrade
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     dbState: AppDatabaseState,
@@ -106,7 +108,7 @@ fun SettingsScreen(
     onManageSubjects: () -> Unit,
     onManageHolidays: () -> Unit,
     onImportBackupUri: (Uri) -> Unit,
-    onExportBackupUri: (Uri) -> Unit,
+    onExportBackupUri: (Uri, Boolean) -> Unit,
     onMasterReset: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -114,6 +116,8 @@ fun SettingsScreen(
 
     val context = LocalContext.current
     var showResetDialog by remember { mutableStateOf(false) }
+    var showExportOptionsSheet by remember { mutableStateOf(false) }
+    var exportScheduleOnly by rememberSaveable { mutableStateOf(false) }
 
     var hasNotifPermission by remember {
         mutableStateOf(
@@ -144,7 +148,77 @@ fun SettingsScreen(
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        if (uri != null) onExportBackupUri(uri)
+        if (uri != null) onExportBackupUri(uri, exportScheduleOnly)
+    }
+
+    if (showExportOptionsSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showExportOptionsSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = RoutineColors.SurfaceCard,
+            contentColor = Color.White,
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 28.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Export Data",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Choose what to include in the JSON file",
+                    fontSize = 13.sp,
+                    color = RoutineColors.TextSecondary
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = RoutineColors.Black,
+                    border = BorderStroke(1.dp, RoutineColors.BorderSubtle),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SettingsActionRow(
+                        icon = Icons.Rounded.CalendarMonth,
+                        iconBg = Color(0xFF0E323D),
+                        iconTint = RoutineColors.CyanAccent,
+                        title = "Schedule Only (Share)",
+                        subtitle = "Classes, subjects & holidays only - keeps friends' CT marks untouched",
+                        onClick = {
+                            exportScheduleOnly = true
+                            showExportOptionsSheet = false
+                            exportLauncher.launch("routine_schedule_${RoutineDate.today().toIso()}.json")
+                        }
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = RoutineColors.Black,
+                    border = BorderStroke(1.dp, RoutineColors.BorderSubtle),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SettingsActionRow(
+                        icon = Icons.Rounded.Save,
+                        iconBg = Color(0xFF0F2D1D),
+                        iconTint = RoutineColors.EmeraldSuccess,
+                        title = "Full Backup (Personal)",
+                        subtitle = "All routine data including your CT marks, cancellations & settings",
+                        onClick = {
+                            exportScheduleOnly = false
+                            showExportOptionsSheet = false
+                            exportLauncher.launch("routine_backup_${RoutineDate.today().toIso()}.json")
+                        }
+                    )
+                }
+            }
+        }
     }
 
     if (showResetDialog) {
@@ -362,8 +436,8 @@ fun SettingsScreen(
                         icon = Icons.Rounded.Download,
                         iconBg = Color(0xFF0E323D),
                         iconTint = RoutineColors.CyanAccent,
-                        title = "Import Backup",
-                        subtitle = "Restore data from a JSON file",
+                        title = "Import Data",
+                        subtitle = "Auto-detects full backup or schedule-only JSON",
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) }
                     )
                     HorizontalDivider(color = RoutineColors.BorderSubtle)
@@ -371,9 +445,9 @@ fun SettingsScreen(
                         icon = Icons.Rounded.Upload,
                         iconBg = Color(0xFF0F2D1D),
                         iconTint = RoutineColors.EmeraldSuccess,
-                        title = "Export Backup",
-                        subtitle = "Download your data as a JSON file",
-                        onClick = { exportLauncher.launch("routine_backup_${RoutineDate.today().toIso()}.json") }
+                        title = "Export Data",
+                        subtitle = "Save full backup or share schedule only",
+                        onClick = { showExportOptionsSheet = true }
                     )
                     HorizontalDivider(color = RoutineColors.BorderSubtle)
                     SettingsActionRow(

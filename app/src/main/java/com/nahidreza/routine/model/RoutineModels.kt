@@ -266,6 +266,21 @@ data class AppSettings(
 
 @Serializable
 @Immutable
+data class SharedScheduleBackup(
+    val kind: String = KIND_SCHEDULE_ONLY,
+    val subjects: List<Subject> = emptyList(),
+    val entries: List<RoutineEntry> = emptyList(),
+    val holidays: List<HolidayRange> = emptyList(),
+    val semesterStartDateIso: String = RoutineDate.today().startOfUniversityWeek().toIso(),
+    val manualWeekOffset: Int = 0
+) {
+    companion object {
+        const val KIND_SCHEDULE_ONLY = "SCHEDULE_ONLY"
+    }
+}
+
+@Serializable
+@Immutable
 data class AppDatabaseState(
     val subjects: List<Subject> = emptyList(),
     val entries: List<RoutineEntry> = emptyList(),

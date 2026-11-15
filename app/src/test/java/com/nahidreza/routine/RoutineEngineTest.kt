@@ -1,10 +1,15 @@
 package com.nahidreza.routine
 
+import com.nahidreza.routine.data.RoutineRepository
 import com.nahidreza.routine.data.RoutineScheduleEngine
+import com.nahidreza.routine.model.AppDatabaseState
+import com.nahidreza.routine.model.AppSettings
+import com.nahidreza.routine.model.CancelledInstance
 import com.nahidreza.routine.model.CtCourseRecord
 import com.nahidreza.routine.model.RepeatPattern
 import com.nahidreza.routine.model.RoutineDate
 import com.nahidreza.routine.model.RoutineEntry
+import com.nahidreza.routine.model.SharedScheduleBackup
 import com.nahidreza.routine.model.Subject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -76,5 +81,41 @@ class RoutineEngineTest {
         val thu = sat.plusDays(5)
         assertFalse(thu.isWorkingDay)
         assertEquals(sat.plusDays(7), RoutineDate.nearestActiveOrNextWorkingDate(thu))
+    }
+
+    @Test
+    fun `merging shared schedule preserves personal CT marks and app preferences`() {
+        val personalCt = listOf(CtCourseRecord("sub_1", listOf(19, 18, 17, null)))
+        val existingState = AppDatabaseState(
+            subjects = listOf(Subject("sub_1", "ECE 3117", "red", listOf("HBK"))),
+            entries = listOf(RoutineEntry("e1", "sub_1", false, "HBK", 1, 0, 1)),
+            cancellations = listOf(
+                CancelledInstance("e1", "2026-11-15"),
+                CancelledInstance("removed_entry", "2026-11-16")
+            ),
+            ctRecords = personalCt,
+            settings = AppSettings(
+                semesterStartDateIso = "2026-11-07",
+                manualWeekOffset = 0,
+                viewMode = "WEEK",
+                notificationsEnabled = false,
+                notificationLeadMinutes = 15
+            )
+        )
+        val shared = SharedScheduleBackup(
+            subjects = listOf(Subject("sub_1", "ECE 3117", "red", listOf("MNT"))),
+            entries = listOf(RoutineEntry("e1", "sub_1", false, "MNT", 1, 0, 1)),
+            semesterStartDateIso = "2026-11-14",
+            manualWeekOffset = 1
+        )
+
+        val merged = RoutineRepository.mergeSharedSchedule(existingState, shared)
+        assertEquals(personalCt, merged.ctRecords)
+        assertEquals("WEEK", merged.settings.viewMode)
+        assertFalse(merged.settings.notificationsEnabled)
+        assertEquals(15, merged.settings.notificationLeadMinutes)
+        assertEquals("2026-11-14", merged.settings.semesterStartDateIso)
+        assertEquals(1, merged.settings.manualWeekOffset)
+        assertEquals(listOf(CancelledInstance("e1", "2026-11-15")), merged.cancellations)
     }
 }
