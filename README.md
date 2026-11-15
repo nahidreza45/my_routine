@@ -1,8 +1,10 @@
 # ROUTINE
 
+[![Android CI](https://github.com/nahidreza45/my_routine/actions/workflows/android.yml/badge.svg)](https://github.com/nahidreza45/my_routine/actions/workflows/android.yml)
+
 An offline-first Android timetable, academic week tracker, and Class Test (CT) marks manager built with **Kotlin** and **Jetpack Compose**, tailored around a Saturday-Wednesday university schedule.
 
-> **Version:** `2.2` (`versionCode = 3`) | **Min SDK:** Android 7.0 (`API 24`) | **Target SDK:** `API 36`
+> **Latest Release:** [`v2.2`](https://github.com/nahidreza45/my_routine/releases) (`versionCode = 3`) | **Min SDK:** Android 7.0 (`API 24`) | **Target SDK:** `API 36`
 
 ---
 
@@ -69,12 +71,16 @@ app/src/main/java/com/nahidreza/routine/
 
 ## Getting Started
 
+### Download APK
+
+Grab the latest prebuilt `ROUTINE.apk` directly from [GitHub Releases](https://github.com/nahidreza45/my_routine/releases).
+
 ### Build from Source
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-username>/university-routine.git
-   cd university-routine
+   git clone https://github.com/nahidreza45/my_routine.git
+   cd my_routine
    ```
 2. Open in **Android Studio** (JDK 17, Android SDK 36) or build via Gradle:
    ```bash
