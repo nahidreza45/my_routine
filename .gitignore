@@ -1,0 +1,25 @@
+# IDE & OS
+*.iml
+.idea/
+.DS_Store
+Thumbs.db
+
+# Gradle & Kotlin build artifacts
+.gradle/
+.kotlin/
+build/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local config & signing secrets
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Packaged APKs / AABs (publish via GitHub Releases instead of git history)
+apk/
+*.apk
+*.aab

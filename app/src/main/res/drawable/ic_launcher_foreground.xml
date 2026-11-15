@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Elevated obsidian glass bento tile centered in adaptive safe zone -->
+    <path
+        android:pathData="M41,27 L67,27 A14,14 0 0,1 81,41 L81,67 A14,14 0 0,1 67,81 L41,81 A14,14 0 0,1 27,67 L27,41 A14,14 0 0,1 41,27 Z"
+        android:strokeWidth="1.2"
+        android:strokeColor="#38FFFFFF">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="81"
+                android:endY="81"
+                android:startX="27"
+                android:startY="27"
+                android:type="linear">
+                <item
+                    android:color="#FF182032"
+                    android:offset="0" />
+                <item
+                    android:color="#FF0D111C"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Top primary live block -->
+    <path android:pathData="M38.25,36 L69.75,36 A4.25,4.25 0 0,1 74,40.25 A4.25,4.25 0 0,1 69.75,44.5 L38.25,44.5 A4.25,4.25 0 0,1 34,40.25 A4.25,4.25 0 0,1 38.25,36 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="74"
+                android:endY="44.5"
+                android:startX="34"
+                android:startY="36"
+                android:type="linear">
+                <item
+                    android:color="#FF22D3EE"
+                    android:offset="0" />
+                <item
+                    android:color="#FF2563EB"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M69.5,38.45 A1.8,1.8 0 1,1 69.49,38.45 Z" />
+
+    <!-- Middle row: violet slot + frosted break capsule -->
+    <path android:pathData="M38.25,49.5 L51.75,49.5 A4.25,4.25 0 0,1 56,53.75 A4.25,4.25 0 0,1 51.75,58 L38.25,58 A4.25,4.25 0 0,1 34,53.75 A4.25,4.25 0 0,1 38.25,49.5 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="56"
+                android:endY="58"
+                android:startX="34"
+                android:startY="49.5"
+                android:type="linear">
+                <item
+                    android:color="#FFC084FC"
+                    android:offset="0" />
+                <item
+                    android:color="#FF7C3AED"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#30FFFFFF"
+        android:pathData="M64.25,49.5 L69.75,49.5 A4.25,4.25 0 0,1 74,53.75 A4.25,4.25 0 0,1 69.75,58 L64.25,58 A4.25,4.25 0 0,1 60,53.75 A4.25,4.25 0 0,1 64.25,49.5 Z" />
+
+    <!-- Bottom row: coral-orange class block + cyan pulse orb -->
+    <path android:pathData="M38.25,63 L57.75,63 A4.25,4.25 0 0,1 62,67.25 A4.25,4.25 0 0,1 57.75,71.5 L38.25,71.5 A4.25,4.25 0 0,1 34,67.25 A4.25,4.25 0 0,1 38.25,63 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="62"
+                android:endY="71.5"
+                android:startX="34"
+                android:startY="63"
+                android:type="linear">
+                <item
+                    android:color="#FFFB7185"
+                    android:offset="0" />
+                <item
+                    android:color="#FFEA580C"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#FF22D3EE"
+        android:pathData="M69.75,63 A4.25,4.25 0 1,1 69.74,63 Z" />
+</vector>
