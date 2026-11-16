@@ -1,7 +1,10 @@
 package com.nahidreza.routine
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
@@ -21,9 +24,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nahidreza.routine.model.RoutineDate
 import com.nahidreza.routine.notification.NotificationHelper
@@ -65,6 +72,44 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(Unit) {
                 viewModel.toastMessage.collect { message ->
                     Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val timeReceiver = object : BroadcastReceiver() {
+                    override fun onReceive(context: Context, intent: Intent) {
+                        viewModel.syncCurrentTime()
+                    }
+                }
+                val filter = IntentFilter().apply {
+                    addAction(Intent.ACTION_TIME_TICK)
+                    addAction(Intent.ACTION_TIME_CHANGED)
+                    addAction(Intent.ACTION_TIMEZONE_CHANGED)
+                }
+                val observer = LifecycleEventObserver { _, event ->
+                    when (event) {
+                        Lifecycle.Event.ON_START -> {
+                            ContextCompat.registerReceiver(
+                                this@MainActivity,
+                                timeReceiver,
+                                filter,
+                                ContextCompat.RECEIVER_NOT_EXPORTED
+                            )
+                        }
+                        Lifecycle.Event.ON_RESUME -> {
+                            viewModel.syncCurrentTime()
+                        }
+                        Lifecycle.Event.ON_STOP -> {
+                            runCatching { unregisterReceiver(timeReceiver) }
+                        }
+                        else -> Unit
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                    runCatching { unregisterReceiver(timeReceiver) }
                 }
             }
 

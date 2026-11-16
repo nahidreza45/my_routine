@@ -1,9 +1,12 @@
 package com.nahidreza.routine.ui
 
 import android.Manifest
+import android.app.AlarmManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -74,6 +77,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -93,6 +97,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.nahidreza.routine.model.AppDatabaseState
 import com.nahidreza.routine.model.ColorPalette
 import com.nahidreza.routine.model.RoutineDate
@@ -115,9 +122,30 @@ fun SettingsScreen(
     BackHandler(onBack = onBack)
 
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var showResetDialog by remember { mutableStateOf(false) }
     var showExportOptionsSheet by remember { mutableStateOf(false) }
     var exportScheduleOnly by rememberSaveable { mutableStateOf(false) }
+
+    fun checkExactAlarmAllowed(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            context.getSystemService(AlarmManager::class.java)?.canScheduleExactAlarms() == true
+        } else {
+            true
+        }
+    }
+
+    var canScheduleExactAlarms by remember { mutableStateOf(checkExactAlarmAllowed()) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                canScheduleExactAlarms = checkExactAlarmAllowed()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     var hasNotifPermission by remember {
         mutableStateOf(
@@ -400,6 +428,31 @@ fun SettingsScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+
+                    if (dbState.settings.notificationsEnabled && !canScheduleExactAlarms && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color(0xFF33210F),
+                            border = BorderStroke(1.dp, RoutineColors.AmberWarning.copy(alpha = 0.45f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val intent = Intent(
+                                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                        Uri.parse("package:${context.packageName}")
+                                    )
+                                    runCatching { context.startActivity(intent) }
+                                }
+                        ) {
+                            Text(
+                                text = "Exact alarm access is off. Tap to allow Alarms & reminders so morning alerts fire on time.",
+                                fontSize = 12.sp,
+                                color = RoutineColors.AmberWarning,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                            )
                         }
                     }
                 }

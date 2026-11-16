@@ -49,7 +49,8 @@ object AlarmScheduler {
         val leadMillis = leadMinutes * 60_000L
         val newIds = HashSet<String>()
 
-        for (dayOffset in 0..14) {
+        // Keep a compact 7-day rolling window (refreshed whenever alerts fire, on app open, or on boot/update)
+        for (dayOffset in 0..6) {
             val date = today.plusDays(dayOffset)
             if (!date.isWorkingDay) continue
             if (RoutineScheduleEngine.isHoliday(date, state.holidays) != null) continue

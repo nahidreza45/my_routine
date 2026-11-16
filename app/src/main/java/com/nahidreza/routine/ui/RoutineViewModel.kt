@@ -104,9 +104,18 @@ class RoutineViewModel(application: Application) : AndroidViewModel(application)
         }
         viewModelScope.launch {
             while (true) {
-                delay(30_000L)
                 _currentMinutesOfDay.value = RoutineScheduleEngine.currentMinutesOfDay()
+                val nowMs = System.currentTimeMillis()
+                val msUntilNextMinute = 60_000L - (nowMs % 60_000L) + 50L
+                delay(msUntilNextMinute)
             }
+        }
+    }
+
+    fun syncCurrentTime() {
+        val now = RoutineScheduleEngine.currentMinutesOfDay()
+        if (_currentMinutesOfDay.value != now) {
+            _currentMinutesOfDay.value = now
         }
     }
 

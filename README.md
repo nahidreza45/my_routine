@@ -4,7 +4,7 @@
 
 An offline-first Android timetable, academic week tracker, and Class Test (CT) marks manager built with **Kotlin** and **Jetpack Compose**, tailored around a Saturday-Wednesday university schedule.
 
-> **Latest Release:** [`v2.5`](https://github.com/nahidreza45/my_routine/releases) (`versionCode = 6`) | **Min SDK:** Android 7.0 (`API 24`) | **Target SDK:** `API 36`
+> **Latest Release:** [`v2.6`](https://github.com/nahidreza45/my_routine/releases) (`versionCode = 7`) | **Min SDK:** Android 7.0 (`API 24`) | **Target SDK:** `API 36`
 
 ---
 

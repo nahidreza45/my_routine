@@ -8,6 +8,7 @@ import com.nahidreza.routine.data.RoutineRepository
 import com.nahidreza.routine.model.CancelledInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class ClassAlarmReceiver : BroadcastReceiver() {
@@ -37,6 +38,17 @@ class ClassAlarmReceiver : BroadcastReceiver() {
                     leadMinutes = leadMinutes,
                     accentArgb = accentArgb
                 )
+
+                val pendingResult = goAsync()
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val repo = RoutineRepository(context.applicationContext)
+                        val state = repo.stateFlow.first()
+                        AlarmScheduler.scheduleUpcomingAlarms(context.applicationContext, state)
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }
             }
 
             ACTION_CANCEL_TODAY -> {
